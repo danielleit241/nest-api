@@ -24,6 +24,7 @@ model User {
   firstName String?
   lastName  String?
 
+  roles    String[]   @default(["user"])
   bookmark Bookmark[]
 
   @@map("users")
