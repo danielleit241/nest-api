@@ -14,4 +14,11 @@ export class PrismaService extends PrismaClient {
     });
     // console.log('PrismaService initialized with database URL:', config.get<string>('DATABASE_URL'));
   }
+
+  cleanDb() {
+    return this.$transaction([
+      this.bookmark.deleteMany(),
+      this.user.deleteMany(),
+    ]);
+  }
 }

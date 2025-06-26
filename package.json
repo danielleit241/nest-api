@@ -10,7 +10,6 @@
     "db:dev:rm": "docker compose rm dev-db -s -f -v",
     "db:dev:up": "docker compose up -d dev-db -d",
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && timeout /t 1 >nul && npm run prisma:dev:deploy",
-
     "prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
     "db:test:rm": "docker compose rm test-db -s -f -v",
     "db:test:up": "docker compose up -d test-db -d",
