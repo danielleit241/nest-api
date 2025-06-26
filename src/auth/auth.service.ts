@@ -3,7 +3,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto, TokenDto } from './dto';
+import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
@@ -17,7 +17,7 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signup(dto: AuthDto): Promise<TokenDto> {
+  async signup(dto: AuthDto) {
     try {
       //generate the password hash
       const hash = await argon.hash(dto.password);
@@ -32,12 +32,10 @@ export class AuthService {
 
       const { hash: _hash, ...userWithoutHash } =
         user;
-      return {
-        access_token: await this.signToken(
-          userWithoutHash.id,
-          userWithoutHash.email,
-        ),
-      };
+      return await this.signToken(
+        userWithoutHash.id,
+        userWithoutHash.email,
+      );
     } catch (error) {
       if (
         error instanceof
@@ -52,7 +50,7 @@ export class AuthService {
     }
   }
 
-  async signin(dto: AuthDto): Promise<TokenDto> {
+  async signin(dto: AuthDto) {
     //find the user by email
     const user =
       await this.prismaService.user.findFirst({
@@ -76,18 +74,19 @@ export class AuthService {
         'Credentials incorrect',
       );
     }
-    return {
-      access_token: await this.signToken(
-        user.id,
-        user.email,
-      ),
-    };
+    return await this.signToken(
+      user.id,
+      user.email,
+    );
   }
 
   async signToken(
     userId: number,
     email: string,
-  ): Promise<string> {
+  ): Promise<{
+    access_token: string;
+    refresh_token?: string;
+  }> {
     const claims = {
       sub: userId,
       email,
@@ -96,9 +95,15 @@ export class AuthService {
     const secret =
       this.config.get<string>('JWT_SECRET');
 
-    return this.jwt.signAsync(claims, {
-      expiresIn: '15m',
-      secret: secret,
-    });
+    const token = await this.jwt.signAsync(
+      claims,
+      {
+        expiresIn: '15m',
+        secret,
+      },
+    );
+    return {
+      access_token: token,
+    };
   }
 }

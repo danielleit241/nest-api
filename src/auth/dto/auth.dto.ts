@@ -13,9 +13,3 @@ export class AuthDto {
   @IsNotEmpty()
   password: string;
 }
-
-export class TokenDto {
-  @IsString()
-  @IsNotEmpty()
-  access_token: string;
-}
