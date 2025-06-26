@@ -17,7 +17,7 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signup(dto: AuthDto) {
+  async signup(dto: AuthDto): Promise<TokenDto> {
     try {
       //generate the password hash
       const hash = await argon.hash(dto.password);
@@ -32,7 +32,12 @@ export class AuthService {
 
       const { hash: _hash, ...userWithoutHash } =
         user;
-      return userWithoutHash;
+      return {
+        access_token: await this.signToken(
+          userWithoutHash.id,
+          userWithoutHash.email,
+        ),
+      };
     } catch (error) {
       if (
         error instanceof
